@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hiragana ↔ Romaji Quiz</title>
+<style>
+  body{
+    font-family: "Hiragino Kaku Gothic Pro","Meiryo",sans-serif;
+    background:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px;
+    text-align:center;
+  }
+  h1{color:#b23b3b;font-size:2em;margin-bottom:20px;}
+  #quiz-container{
+    background:#fff;border-radius:15px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    padding:30px;width:90%;max-width:500px;
+  }
+  .question{font-size:3em;margin-bottom:25px;}
+  .option{
+    display:block;background:#ffeaea;border:none;
+    border-radius:10px;padding:12px;font-size:1.3em;
+    width:100%;max-width:300px;margin:10px auto;cursor:pointer;
+    transition:background-color .2s;
+  }
+  .option:hover{background:#f7b6b6;}
+  #message{margin-top:20px;font-weight:bold;font-size:1.2em;}
+  #next{
+    display:none;margin-top:25px;background:#b23b3b;
+    color:white;border:none;border-radius:10px;
+    padding:10px 20px;font-size:1.1em;cursor:pointer;
+  }
+  #next:hover{background:#a03030;}
+</style>
+</head>
+<body>
+
+<h1>Hiragana ↔ Romaji Quiz</h1>
+
+<div id="quiz-container">
+  <div id="question-number"></div>
+  <div class="question" id="question"></div>
+  <div id="options"></div>
+  <div id="message"></div>
+  <button id="next">Next</button>
+</div>
+
+<script>
+const baseQuestions = [
+  {h:"あ",r:"a"},{h:"い",r:"i"},{h:"う",r:"u"},{h:"え",r:"e"},{h:"お",r:"o"},
+  {h:"か",r:"ka"},{h:"き",r:"ki"},{h:"く",r:"ku"},{h:"け",r:"ke"},{h:"こ",r:"ko"},
+  {h:"が",r:"ga"},{h:"ぎ",r:"gi"},{h:"ぐ",r:"gu"},{h:"げ",r:"ge"},{h:"ご",r:"go"},
+  {h:"た",r:"ta"},{h:"ち",r:"chi"},{h:"つ",r:"tsu"},{h:"て",r:"te"},{h:"と",r:"to"},
+  {h:"だ",r:"da"},{h:"ぢ",r:"ji"},{h:"づ",r:"zu"},{h:"で",r:"de"},{h:"ど",r:"do"},
+  {h:"な",r:"na"},{h:"に",r:"ni"},{h:"ぬ",r:"nu"},{h:"ね",r:"ne"},{h:"の",r:"no"},
+  {h:"ん",r:"n"}
+];
+
+let questionPool = [];
+for(let i=0;i<50;i++){
+  const item=baseQuestions[Math.floor(Math.random()*baseQuestions.length)];
+  const direction=Math.random()<.5?"toRomaji":"toHiragana";
+  questionPool.push({...item,direction});
+}
+
+let current=0;
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const messageEl=document.getElementById("message");
+const nextBtn=document.getElementById("next");
+const qNumEl=document.getElementById("question-number");
+
+function shuffle(a){return a.sort(()=>Math.random()-0.5)}
+
+function showQuestion(){
+  messageEl.textContent="";
+  nextBtn.style.display="none";
+  const q=questionPool[current];
+  qNumEl.textContent=`Question ${current+1} / ${questionPool.length}`;
+  optionsEl.innerHTML="";
+
+  let displayValue,correctAnswer,allOptions;
+  if(q.direction==="toRomaji"){
+    displayValue=q.h;
+    correctAnswer=q.r;
+    allOptions=baseQuestions.map(x=>x.r);
+  }else{
+    displayValue=q.r;
+    correctAnswer=q.h;
+    allOptions=baseQuestions.map(x=>x.h);
+  }
+
+  questionEl.textContent=displayValue;
+
+  const wrong=shuffle(allOptions.filter(x=>x!==correctAnswer)).slice(0,3);
+  const opts=shuffle([correctAnswer,...wrong]);
+
+  opts.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.textContent=opt;
+    btn.className="option";
+    btn.onclick=()=>checkAnswer(opt,correctAnswer);
+    optionsEl.appendChild(btn);
+  });
+}
+
+function checkAnswer(a,c){
+  if(a===c){
+    messageEl.textContent="Correct!";
+    messageEl.style.color="green";
+  }else{
+    messageEl.textContent=`Wrong! Correct: ${c}`;
+    messageEl.style.color="red";
+  }
+  nextBtn.style.display="block";
+}
+
+nextBtn.onclick=()=>{
+  current++;
+  if(current>=questionPool.length){
+    messageEl.textContent="Done!";
+    questionEl.textContent="";
+    optionsEl.innerHTML="";
+    nextBtn.style.display="none";
+  }else{
+    showQuestion();
+  }
+}
+
+showQuestion();
+</script>
+
+</body>
+</html>
